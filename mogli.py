@@ -364,6 +364,22 @@ def read(file_name, file_format=None):
                        "xyz files if pybel is not installed.")
             raise UnknownFileFormatException(message)
 
+def load(file_name,name,smile,scaling=10,fix=np.array([0,0,0])):
+    molecules = []
+    smiles = []
+    for cha in smile:
+        if cha.isalpha():
+            smiles.append(cha)
+    N = len(smiles)
+    with np.load(file_name) as data:
+        positions = data[name].reshape(-1,N,3)*scaling
+    positions[:,:] = positions[:,:]-fix
+    atomic_numbers = [ATOM_NUMBERS[atom_string] for atom_string in smiles]
+    for i in range(positions.shape[0]):
+        molecules.append(Molecule(atomic_numbers,positions[i]))
+
+    return molecules
+
 
 def show(molecule, width=500, height=500,
          show_bonds=True, bonds_method='radii', bonds_param=None,
