@@ -521,6 +521,7 @@ def export(molecule, file_name, width=500, height=500,
     _set_gr3_camera()
     _create_gr3_scene(molecule, show_bonds)
     glEnable(GL_DEPTH_TEST)
+    gr3.setquality(gr3.GR3_Quality.GR3_QUALITY_OPENGL_16X_SSAA)
     gr3.export(file_name, width, height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
     glDisable(GL_DEPTH_TEST)
