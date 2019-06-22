@@ -209,7 +209,7 @@ class Molecule(object):
          - using a constant delta as maximum distance between to bonded atoms
         """
         method = method.lower()
-        if method not in ('radii', 'constant_delta'):
+        if method not in ('radii', 'constant_delta', 'fix_bond'):
             raise ValueError("method should be either 'radii' or 'constant "
                              "delta', not '%s'" % method)
 
@@ -235,27 +235,34 @@ class Molecule(object):
                 raise ValueError("method 'constant_delta' requires param to "
                                  "specify the maximum distance between two "
                                  "atoms to cause a bond between them.")
+        if method == "fix_bond":
+            if param is None:
+                raise ValueError("method 'fix_bond' requires a SMILE expression")
 
         index_pair_list = []
         for index, position in enumerate(self.positions):
             distance_vectors = self.positions[index+1:] - position
             distances_squared = np.sum(np.power(distance_vectors, 2), axis=1)
-            if method == 'radii':
-                deltas = np.square((radii[index+1:]+radii[index])*param)
-            elif method == 'constant_delta':
-                deltas = param**2
-            nonzero_indices = np.nonzero(distances_squared <= deltas)
-            num_bonds = len(nonzero_indices[0])
-            if num_bonds > 0:
-                index_pairs = np.hstack((np.ones(num_bonds, dtype=np.uint32)
-                                         .reshape(num_bonds, 1)*index,
-                                         index+1+nonzero_indices[0]
-                                         .reshape(num_bonds, 1)))
-                index_pair_list.append(index_pairs)
-        if index_pair_list:
-            index_pairs = np.vstack(index_pair_list)
-        else:
-            index_pairs = np.zeros((0, 2))
+            if method == 'fix_bond':
+                index_pairs = _smiles2graph(param)
+            else:
+                if method == 'radii':
+                    deltas = np.square((radii[index+1:]+radii[index])*param)
+                elif method == 'constant_delta':
+                    deltas = param**2
+                nonzero_indices = np.nonzero(distances_squared <= deltas)
+                num_bonds = len(nonzero_indices[0])
+                if num_bonds > 0:
+                    index_pairs = np.hstack((np.ones(num_bonds, dtype=np.uint32)
+                                             .reshape(num_bonds, 1)*index,
+                                             index+1+nonzero_indices[0]
+                                             .reshape(num_bonds, 1)))
+                    index_pair_list.append(index_pairs)
+                if index_pair_list:
+                    index_pairs = np.vstack(index_pair_list)
+                else:
+                    index_pairs = np.zeros((0, 2))
+
         self.bonds = Bonds(method, param, index_pairs)
 
 
@@ -472,7 +479,7 @@ def draw(molecule,
     _set_gr3_camera()
     _create_gr3_scene(molecule, show_bonds)
     glEnable(GL_DEPTH_TEST)
-    gr3.setquality(gr3.GR3_Quality.GR3_QUALITY_OPENGL_2X_SSAA)
+    gr3.setquality(gr3.GR3_Quality.GR3_QUALITY_OPENGL_16X_SSAA)
     gr3.drawimage(xmin, xmax, ymin, ymax,
                   width, height, gr3.GR3_Drawable.GR3_DRAWABLE_GKS)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -518,6 +525,27 @@ def export(molecule, file_name, width=500, height=500,
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
     glDisable(GL_DEPTH_TEST)
 
+def _smiles2graph(smiles):
+    onhand = 0
+    former = 0
+    root = 0
+    rootFlag = False
+    graph = []
+    for char in smiles:
+        if char == "(":
+            root = former
+            rootflag = True
+        elif char.isalpha():
+            if rootFlag:
+                graph.append([root,onhand])
+            else:
+                graph.append([former,onhand])
+            former = onhand
+            onhand += 1
+        elif char == ")":
+            rootFlag = False
+            former = root
+    return np.array(graph[1:])
 
 def _set_gr3_camera():
     """ Set the GR3 camera, using the global _camera variable. """
