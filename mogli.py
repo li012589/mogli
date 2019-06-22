@@ -479,7 +479,7 @@ def draw(molecule,
     _set_gr3_camera()
     _create_gr3_scene(molecule, show_bonds)
     glEnable(GL_DEPTH_TEST)
-    gr3.setquality(gr3.GR3_Quality.GR3_QUALITY_OPENGL_16X_SSAA)
+    #gr3.setquality(gr3.GR3_Quality.GR3_QUALITY_OPENGL_16X_SSAA)
     gr3.drawimage(xmin, xmax, ymin, ymax,
                   width, height, gr3.GR3_Drawable.GR3_DRAWABLE_GKS)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
