@@ -448,7 +448,7 @@ def show(molecule, width=500, height=500,
 
 
 def draw(molecule,
-         xmin=0, xmax=1, ymin=0, ymax=1, width=500, height=500,
+         xmin=0, xmax=1, ymin=0, ymax=1, width=2000, height=2000,
          show_bonds=True, bonds_method='radii', bonds_param=None,
          camera=None):
     """
