@@ -372,19 +372,25 @@ def read(file_name, file_format=None):
             raise UnknownFileFormatException(message)
 
 def load(file_name,name,smile,scaling=10,fix=np.array([0,0,0])):
-    molecules = []
+    with np.load(file_name) as data:
+        positions = data[name].reshape(-1,3)*scaling
+    positions[:,:] = positions[:,:]-fix
+    return from_numpy(positions,smile)
+
+def from_numpy(array,smile):
+    """
+    array must be of [n,3]
+    """
     smiles = []
     for cha in smile:
         if cha.isalpha():
             smiles.append(cha)
     N = len(smiles)
-    with np.load(file_name) as data:
-        positions = data[name].reshape(-1,N,3)*scaling
-    positions[:,:] = positions[:,:]-fix
+    array = array.reshape(-1,N,3)
     atomic_numbers = [ATOM_NUMBERS[atom_string] for atom_string in smiles]
-    for i in range(positions.shape[0]):
-        molecules.append(Molecule(atomic_numbers,positions[i]))
-
+    molecules = []
+    for i in range(array.shape[0]):
+        molecules.append(Molecule(atomic_numbers,array[i]))
     return molecules
 
 
