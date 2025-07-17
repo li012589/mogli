@@ -399,12 +399,26 @@ def read(file_name, file_format=None):
                                       in atom_strings])
                 molecules.append(Molecule(atomic_numbers, positions))
             return molecules
+        if (file_format == 'pdb' or
+            (file_format is None and file_name.endswith('.pdb'))):
+            with open(file_name, 'r') as input_file:
+                file_content = input_file.readlines()
+            molecules = []
+            smiles = []
+            position = []
+            for l in file_content:
+                l = l.split()
+                if l[0] == 'ATOM':
+                    smiles.append(l[-1])
+                    position.append(l[6:9])
+            smiles = ''.join(smiles)
+            molecules.append(from_numpy(np.expand_dims(positions, 0), smiles))
         else:
             message = ("Failed to import pybel. Currently mogli only supports "
                        "xyz files if pybel is not installed.")
             raise UnknownFileFormatException(message)
 
-def load(file_name,name,smile,scaling=10,fix=np.array([0,0,0])):
+def load(file_name, name, smile, scaling=10, fix=np.array([0,0,0])):
     with np.load(file_name) as data:
         positions = data[name].reshape(-1,3)*scaling
     positions[:,:] = positions[:,:]-fix
