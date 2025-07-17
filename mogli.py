@@ -413,7 +413,7 @@ def read(file_name, file_format=None):
                     positions.append(l[6:9])
             smiles = ''.join(smiles)
             positions = np.array(positions).astype(float)
-            molecules.append(from_numpy(np.expand_dims(positions, 0), smiles))
+            return from_numpy(np.expand_dims(positions, 0), smiles)
         else:
             message = ("Failed to import pybel. Currently mogli only supports "
                        "xyz files if pybel is not installed.")
