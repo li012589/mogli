@@ -405,13 +405,14 @@ def read(file_name, file_format=None):
                 file_content = input_file.readlines()
             molecules = []
             smiles = []
-            position = []
+            positions = []
             for l in file_content:
                 l = l.split()
                 if l[0] == 'ATOM':
                     smiles.append(l[-1])
-                    position.append(l[6:9])
+                    positions.append(l[6:9])
             smiles = ''.join(smiles)
+            positions = np.array(positions).astype(float)
             molecules.append(from_numpy(np.expand_dims(positions, 0), smiles))
         else:
             message = ("Failed to import pybel. Currently mogli only supports "
