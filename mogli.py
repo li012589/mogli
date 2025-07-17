@@ -399,7 +399,7 @@ def read(file_name, file_format=None):
                                       in atom_strings])
                 molecules.append(Molecule(atomic_numbers, positions))
             return molecules
-        if (file_format == 'pdb' or
+        elif (file_format == 'pdb' or
             (file_format is None and file_name.endswith('.pdb'))):
             with open(file_name, 'r') as input_file:
                 file_content = input_file.readlines()
@@ -623,7 +623,7 @@ def _create_gr3_scene(molecule: Molecule, show_bonds=True):
                        molecule.positions,
                        colors,
                        molecule.atomic_radii)
-    
+
     if show_bonds and len(molecule.bonds.index_pairs) > 0:
         index_pairs = molecule.bonds.index_pairs
         num_bonds = len(molecule.bonds)
